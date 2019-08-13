@@ -134,5 +134,5 @@ p <- dotplot(pathway_enrichment, showCategory = 25, x = ~ sample) +
 
 ggsave(
 	file.path("..", "results", "term_enrichment", "REACTOME_enrichment_dotplot.pdf"),
-	plot = p, device = cairo_pdf, height = 15, width = 10
+	plot = p, device = cairo_pdf, height = 15, width = 15
 )
