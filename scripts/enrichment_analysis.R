@@ -6,6 +6,7 @@ library("org.Dm.eg.db")
 library("ReactomePA")
 library("meshes")
 library("MeSH.Dme.eg.db")
+library("GSEABase")
 
 #######################
 ## Enrichment Analysis
@@ -193,7 +194,25 @@ ggsave(
 ## Wikipathway Analysis
 ## ----------
 
-wp2gene <- read.gmt(file.path("..", "files", "wikipathways-20190810-gmt-Drosophila_melanogaster.gmt"))
+## Prepare wikipathway terms.
+
+wikipathway_terms <- read.gmt(file.path("..", "files", "wikipathways-20190810-gmt-Drosophila_melanogaster.gmt")) %>%
+	as_tibble(.name_repair = "unique") %>%
+	separate(col = ont, into = c("name","version","wpid","org"), sep = "%")
+
+wpid2gene <- dplyr::select(wikipathway_terms, wpid, gene)
+wpid2name <- dplyr::select(wikipathway_terms, wpid, name)
+
+## Wikipathway enrichment analysis.
+
+wikipathway_enrichment <- compareCluster(
+	ENTREZID ~ sample + Change,
+	data = entrez,
+	fun = "enricher",
+	pAdjustMethod = "fdr",
+	TERM2GENE = wpid2gene,
+	TERM2NAME = wpid2name
+)
 
 ## MeSH Enrichment
 ## ----------
