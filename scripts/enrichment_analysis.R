@@ -209,3 +209,25 @@ mesh_enrichment <- compareCluster(
 	category = "C",
 	pAdjustMethod = "fdr",
 )
+
+## Export table of results.
+
+mesh_enrichment %>%
+	as_tibble(.name_repair = "universal") %>%
+	dplyr::rename("FDR" = p.adjust) %>%
+	write.table(
+		., file.path("..", "results", "term_enrichment", "MESH_enrichment_table.tsv"),
+		sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE
+	)
+
+## Plot MeSH pathway enrichment.
+
+p <- dotplot(mesh_enrichment, showCategory = 20, x = ~ sample) +
+	facet_grid(~ Change) +
+	theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+	scale_color_viridis_c(name = "FDR")
+
+ggsave(
+	file.path("..", "results", "term_enrichment", "MESH_enrichment_dotplot.pdf"),
+	plot = p, device = cairo_pdf, height = 10, width = 10
+)
