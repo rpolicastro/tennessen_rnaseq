@@ -3,6 +3,7 @@
 library("clusterProfiler")
 library("tidyverse")
 library("org.Dm.eg.db")
+library("ReactomePA")
 
 #######################
 ## Enrichment Analysis
@@ -99,3 +100,8 @@ go_dotplot <- function(x, y) {
 }
 
 map2(go_enrichment, names(go_enrichment), ~go_dotplot(.x, .y))
+
+## ReactomeDB Analysis
+## ----------
+
+

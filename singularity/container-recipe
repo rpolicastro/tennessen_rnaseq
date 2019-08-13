@@ -1,0 +1,31 @@
+Bootstrap: docker
+From: continuumio/miniconda3
+
+%post
+
+## Add conda to path
+export PATH=$PATH:/opt/conda/bin
+
+## Update conda
+conda update -n base -y -c defaults conda
+
+## Install R analysis software
+conda create -n tennessen-analysis -y -c conda-forge -c bioconda \
+r-tidyverse \
+bioconductor-rtracklayer \
+bioconductor-genomicranges \
+bioconductor-edger \
+bioconductor-deseq2 \
+bioconductor-org.Dm.eg.db \
+bioconductor-clusterprofiler \
+bioconductor-reactomepa
+
+## Update rnaseq-automation environment
+conda update -n tennessen-analysis -y -c conda-forge -c bioconda --all
+
+## Clean up extra files
+conda clean -y --all
+
+%environment
+
+export PATH=/opt/conda/envs/tennessen-analysis/bin:$PATH
