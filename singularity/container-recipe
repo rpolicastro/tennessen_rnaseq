@@ -21,7 +21,8 @@ bioconductor-org.dm.eg.db \
 bioconductor-clusterprofiler \
 bioconductor-reactomepa \
 bioconductor-meshes \
-bioconductor-mesh.dme.eg.db
+bioconductor-mesh.dme.eg.db \
+bioconductor-gseabase
 
 ## Update rnaseq-automation environment
 conda update -n tennessen-analysis -y -c conda-forge -c bioconda --all

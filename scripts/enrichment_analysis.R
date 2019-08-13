@@ -4,6 +4,8 @@ library("clusterProfiler")
 library("tidyverse")
 library("org.Dm.eg.db")
 library("ReactomePA")
+library("meshes")
+library("MeSH.Dme.eg.db")
 
 #######################
 ## Enrichment Analysis
@@ -186,4 +188,24 @@ p <- dotplot(kegg_enrichment, showCategory = 20, x = ~ sample) +
 ggsave(
 	file.path("..", "results", "term_enrichment", "KEGG_enrichment_dotplot.pdf"),
 	plot = p, device = cairo_pdf, height = 10, width = 10
+)
+
+## Wikipathway Analysis
+## ----------
+
+wp2gene <- read.gmt(file.path("..", "files", "wikipathways-20190810-gmt-Drosophila_melanogaster.gmt"))
+
+## MeSH Enrichment
+## ----------
+
+## MeSH term enrichment.
+
+mesh_enrichment <- compareCluster(
+	ENTREZID ~ sample + Change,
+	data = entrez,
+	fun = "enrichMeSH",
+	MeSHDb = "MeSH.Dme.eg.db",
+	database = "gene2pubmed",
+	category = "C",
+	pAdjustMethod = "fdr",
 )
