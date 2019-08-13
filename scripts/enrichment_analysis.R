@@ -28,7 +28,7 @@ degs <- map(
 	deg_files,
 	~read.delim(., sep = "\t", header = TRUE, stringsAsFactors = FALSE) %>%
 		as_tibble(.name_repair = "unique") %>%
-		select(gene_id, logFC, Change)
+		dplyr::select(gene_id, logFC, Change)
 )
 
 names(degs) <- deg_file_names
@@ -53,26 +53,49 @@ entrez <- map(degs,
 
 ## Compare clusters.
 
-cluster_comparison <- compareCluster(
-	ENTREZID ~ sample + Change,
-	data = entrez,
-	fun = "enrichGO",
-	OrgDb = "org.Dm.eg.db",
-	ont = "BP",
-	readable = TRUE,
-	pAdjustMethod = "fdr"
+go_categories <- c("BP", "MF", "CC")
+
+go_enrichment <- map(
+	go_categories,
+	~compareCluster(
+		ENTREZID ~ sample + Change,
+		data = entrez,
+		fun = "enrichGO",
+		OrgDb = "org.Dm.eg.db",
+		ont = .,
+		readable = TRUE,
+		pAdjustMethod = "fdr"
+	)
+)
+
+names(go_enrichment) <- go_categories
+
+## Export tibble as table.
+
+map2(
+	go_enrichment, names(go_enrichment),
+	~ as_tibble(.x, .name_repair = "universal") %>%
+		dplyr::rename("FDR" = p.adjust) %>%
+		write.table(
+			., file.path("..", "results", "term_enrichment", paste0("GO_", .y, "_enrichment_table.tsv")),
+			sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE
+		)
 )
 
 ## Plot clusters.
 
 dir.create(file.path("..", "results", "term_enrichment"), showWarnings = FALSE)
 
-p <- dotplot(cluster_comparison, showCategory = 20, x = ~sample) +
-	facet_grid(~ Change) +
-	theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-	scale_color_viridis_c(name = "FDR")
+go_dotplot <- function(x, y) {
+	p <- dotplot(x, showCategory = 20, x = ~ sample) +
+		facet_grid(~ Change) +
+		theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+		scale_color_viridis_c(name = "FDR")
 
-ggsave(
-	file.path("..", "results", "term_enrichment", "go_cluster_comparison.pdf"),
-	plot = p, device = cairo_pdf, height = 15, width = 10
-)
+	ggsave(
+		file.path("..", "results", "term_enrichment", paste0("GO_", y, "_enrichment_dotplot.pdf")),
+		plot = p, device = cairo_pdf, height = 15, width = 10
+	)
+}
+
+map2(go_enrichment, names(go_enrichment), ~go_dotplot(.x, .y))
