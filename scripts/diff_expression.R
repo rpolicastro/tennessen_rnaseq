@@ -104,6 +104,20 @@ counts <- map(
 		as.matrix
 )
 
+## Export raw count matrices.
+
+dir.create("../results", showWarnings = FALSE)
+dir.create("../results/diff_expression", showWarnings = FALSE)
+
+map2(
+	counts, names(counts),
+	~as_tibble(.x, .name_repair = "unique", rownames = "gene_id") %>%
+		write.table(
+			., file.path("..", "results", "diff_expression", paste0(.y, "_raw_counts.tsv")),
+			sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE
+		)
+)
+
 ## Differential Expression
 ## ----------
 
@@ -159,9 +173,6 @@ DEGs.df <- map2(
 )
 
 ## Export DEGs.
-
-dir.create("../results", showWarnings = FALSE)
-dir.create("../results/diff_expression", showWarnings = FALSE)
 
 # Number of DEGs.
 n_DEGs <- map(DEGs.df, ~count(., Change, name = "count", sort = TRUE))
