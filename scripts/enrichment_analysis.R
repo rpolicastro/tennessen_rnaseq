@@ -87,8 +87,8 @@ map2(
 
 dir.create(file.path("..", "results", "term_enrichment"), showWarnings = FALSE)
 
-go_dotplot <- function(x, y) {
-	p <- dotplot(x, showCategory = 20, x = ~ sample) +
+enrichment_dotplot <- function(x, y, cats) {
+	p <- dotplot(x, showCategory = cats, x = ~ sample) +
 		facet_grid(~ Change) +
 		theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
 		scale_color_viridis_c(name = "FDR")
@@ -99,9 +99,40 @@ go_dotplot <- function(x, y) {
 	)
 }
 
-map2(go_enrichment, names(go_enrichment), ~go_dotplot(.x, .y))
+map2(go_enrichment, names(go_enrichment), ~enrichment_dotplot(.x, .y, 20))
 
 ## ReactomeDB Analysis
 ## ----------
 
+## ReactomeDB pathway enrichment.
 
+pathway_enrichment <- compareCluster(
+	ENTREZID ~ sample + Change,
+	data = entrez,
+	fun = "enrichPathway",
+	organism = "fly",
+	pAdjustMethod = "fdr",
+	readable = TRUE
+)
+
+## Export table of results.
+
+pathway_enrichment %>%
+	as_tibble(.name_repair = "universal") %>%
+	dplyr::rename("FDR" = p.adjust) %>%
+	write.table(
+		., file.path("..", "results", "term_enrichment", "REACTOME_enrichment_table.tsv"),
+		sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE
+	)
+
+## Plot reactome pathway dotplot.
+
+p <- dotplot(pathway_enrichment, showCategory = 25, x = ~ sample) +
+	facet_grid(~ Change) +
+	theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+	scale_color_viridis_c(name = "FDR")
+
+ggsave(
+	file.path("..", "results", "term_enrichment", "REACTOME_enrichment_dotplot.pdf"),
+	plot = p, device = cairo_pdf, height = 15, width = 10
+)
