@@ -12,13 +12,16 @@ conda update -n base -y -c defaults conda
 ## Install R analysis software
 conda create -n tennessen-analysis -y -c conda-forge -c bioconda \
 r-tidyverse \
+r-cairo \
 bioconductor-rtracklayer \
 bioconductor-genomicranges \
 bioconductor-edger \
 bioconductor-deseq2 \
-bioconductor-org.Dm.eg.db \
+bioconductor-org.dm.eg.db \
 bioconductor-clusterprofiler \
-bioconductor-reactomepa
+bioconductor-reactomepa \
+bioconductor-meshes \
+bioconductor-mesh.dme.eg.db
 
 ## Update rnaseq-automation environment
 conda update -n tennessen-analysis -y -c conda-forge -c bioconda --all

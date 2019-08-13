@@ -136,3 +136,54 @@ ggsave(
 	file.path("..", "results", "term_enrichment", "REACTOME_enrichment_dotplot.pdf"),
 	plot = p, device = cairo_pdf, height = 15, width = 15
 )
+
+## KEGG Analysis.
+## ----------
+
+## Convert IDs to uniprot.
+
+uniprot <- map(degs,
+	~ pull(., gene_id) %>%
+		bitr(
+			geneID = .,
+			fromType = "FLYBASE",
+			toType = "UNIPROT",
+			OrgDb = "org.Dm.eg.db",
+			drop = TRUE
+		) %>%
+		as_tibble(.name_repair = "unique") %>%
+		left_join(., .x, by = c("FLYBASE" = "gene_id"))
+) %>% bind_rows(.id = "sample")
+
+## KEGG pathway enrichment.
+
+kegg_enrichment <- compareCluster(
+	UNIPROT ~ sample + Change,
+	data = uniprot,
+	fun = "enrichKEGG",
+	organism = "dme",
+	keyType = "uniprot",
+	pAdjustMethod = "fdr"
+)
+
+## Export table of results.
+
+kegg_enrichment %>%
+	as_tibble(.name_repair = "universal") %>%
+	dplyr::rename("FDR" = p.adjust) %>%
+	write.table(
+		., file.path("..", "results", "term_enrichment", "KEGG_enrichment_table.tsv"),
+		sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE
+	)
+
+## Plot KEGG pathway enrichment.
+
+p <- dotplot(kegg_enrichment, showCategory = 20, x = ~ sample) +
+	facet_grid(~ Change) +
+	theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+	scale_color_viridis_c(name = "FDR")
+
+ggsave(
+	file.path("..", "results", "term_enrichment", "KEGG_enrichment_dotplot.pdf"),
+	plot = p, device = cairo_pdf, height = 10, width = 10
+)
