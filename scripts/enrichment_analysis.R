@@ -167,7 +167,7 @@ kegg_enrichment <- compareCluster(
 	organism = "dme",
 	keyType = "uniprot",
 	pAdjustMethod = "fdr"
-) %>% setReadable(OrgDb = "org.Dm.eg.db", keytype = "UNIPROT")
+)
 
 ## Export table of results.
 
@@ -227,7 +227,7 @@ mesh_enrichment <- compareCluster(
 	database = "gene2pubmed",
 	category = "C",
 	pAdjustMethod = "fdr",
-) %>% setReadable(OrgDb = "org.Dm.eg.db", keytype = "ENTREZID")
+)
 
 ## Export table of results.
 
